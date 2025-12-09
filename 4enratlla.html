@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quatre en Ratlla</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #023047;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(7, 60px);
+      gap: 5px;
+      justify-content: center;
+      margin: 2rem auto;
+    }
+    .cell {
+      width: 60px;
+      height: 60px;
+      background-color: #d0e9d1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .cell.filled-red {
+      background-color: red;
+    }
+    .cell.filled-yellow {
+      background-color: yellow;
+    }
+    #status {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    #score {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Quatre en Ratlla</h1>
+  <div id="score">🔴 0 – 🟡 0</div>
+  <div id="status">Torn del jugador 🔴</div>
+  <div class="board" id="board"></div>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg"></audio>
+
+  <script>
+    const ROWS = 6;
+    const COLS = 7;
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    const score = document.getElementById('score');
+    const winSound = document.getElementById('winSound');
+    let currentPlayer = 'red';
+    let gameBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    let redScore = 0;
+    let yellowScore = 0;
+
+    function createBoard() {
+      board.innerHTML = '';
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', handleClick);
+          board.appendChild(cell);
+        }
+      }
+    }
+
+    function handleClick(e) {
+      const col = +e.target.dataset.col;
+      for (let row = ROWS - 1; row >= 0; row--) {
+        if (!gameBoard[row][col]) {
+          gameBoard[row][col] = currentPlayer;
+          const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+          cell.classList.add(currentPlayer === 'red' ? 'filled-red' : 'filled-yellow');
+          if (checkWin(row, col)) {
+            winSound.play();
+            if (currentPlayer === 'red') redScore++;
+            else yellowScore++;
+            updateScore();
+            status.textContent = `🏆 Guanya el jugador ${currentPlayer === 'red' ? '🔴' : '🟡'}!`;
+            board.querySelectorAll('.cell').forEach(cell => cell.removeEventListener('click', handleClick));
+            return;
+          }
+          currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+          status.textContent = `Torn del jugador ${currentPlayer === 'red' ? '🔴' : '🟡'}`;
+          return;
+        }
+      }
+    }
+
+    function updateScore() {
+      score.textContent = `🔴 ${redScore} – 🟡 ${yellowScore}`;
+    }
+
+    function checkWin(row, col) {
+      const directions = [
+        [ [0, 1], [0, -1] ],
+        [ [1, 0], [-1, 0] ],
+        [ [1, 1], [-1, -1] ],
+        [ [1, -1], [-1, 1] ]
+      ];
+      for (let dir of directions) {
+        let count = 1;
+        for (let [dr, dc] of dir) {
+          let r = row + dr, c = col + dc;
+          while (r >= 0 && r < ROWS && c >= 0 && c < COLS && gameBoard[r][c] === currentPlayer) {
+            count++;
+            r += dr;
+            c += dc;
+          }
+        }
+        if (count >= 4) return true;
+      }
+      return false;
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>

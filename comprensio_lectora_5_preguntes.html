@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Comprensió lectora</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #023047;
+    }
+    .story {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .question {
+      margin-bottom: 1.5rem;
+    }
+    .question p {
+      font-weight: bold;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background-color: #00a8e8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .result {
+      font-size: 1.2rem;
+      margin-top: 2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📘 Comprensió lectora</h1>
+
+  <div class="story">
+    <p>La Laia té una gata que es diu Nina. La Nina és blanca i dorm tot el dia al sofà. A la tarda, la Laia juga amb la Nina al jardí. A vegades, la Nina corre darrere dels ocells i salta molt alt. La Laia estima molt la seva gata.</p>
+  </div>
+
+  <form id="quiz">
+    <div class="question">
+      <p>1. Quin animal té la Laia?</p>
+      <label><input type="radio" name="q1" value="correcte" /> Una gata</label><br/>
+      <label><input type="radio" name="q1" value="incorrecte" /> Un gos</label><br/>
+      <label><input type="radio" name="q1" value="incorrecte" /> Un conill</label>
+    </div>
+
+    <div class="question">
+      <p>2. Com es diu la gata?</p>
+      <label><input type="radio" name="q2" value="incorrecte" /> Lila</label><br/>
+      <label><input type="radio" name="q2" value="correcte" /> Nina</label><br/>
+      <label><input type="radio" name="q2" value="incorrecte" /> Sira</label>
+    </div>
+
+    <div class="question">
+      <p>3. On dorm la Nina?</p>
+      <label><input type="radio" name="q3" value="correcte" /> Al sofà</label><br/>
+      <label><input type="radio" name="q3" value="incorrecte" /> Al llit de la Laia</label><br/>
+      <label><input type="radio" name="q3" value="incorrecte" /> Al jardí</label>
+    </div>
+
+    <div class="question">
+      <p>4. Quan juga la Laia amb la Nina?</p>
+      <label><input type="radio" name="q4" value="incorrecte" /> Al matí</label><br/>
+      <label><input type="radio" name="q4" value="correcte" /> A la tarda</label><br/>
+      <label><input type="radio" name="q4" value="incorrecte" /> A la nit</label>
+    </div>
+
+    <div class="question">
+      <p>5. Què fa la Nina al jardí?</p>
+      <label><input type="radio" name="q5" value="correcte" /> Corre i salta</label><br/>
+      <label><input type="radio" name="q5" value="incorrecte" /> Neda i vola</label><br/>
+      <label><input type="radio" name="q5" value="incorrecte" /> S’amaga i plora</label>
+    </div>
+
+    <button type="button" onclick="corregir()">Comprova les respostes</button>
+  </form>
+
+  <div class="result" id="resultat"></div>
+
+  <script>
+    function corregir() {
+      let total = 0;
+      for (let i = 1; i <= 5; i++) {
+        const respostes = document.getElementsByName('q' + i);
+        for (let r of respostes) {
+          if (r.checked && r.value === 'correcte') {
+            total++;
+          }
+        }
+      }
+      document.getElementById("resultat").textContent = "Has encertat " + total + " de 5 preguntes.";
+    }
+  </script>
+</body>
+</html>

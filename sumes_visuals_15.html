@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sumes visuals</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      color: #023047;
+      font-size: 2.5rem;
+    }
+    .emoji-group {
+      font-size: 3.5rem;
+      margin: 2rem 0;
+    }
+    .options {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .option {
+      background-color: #ffffff;
+      border: 3px solid #b5d6b2;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .option:hover {
+      background-color: #e1f5e1;
+      transform: scale(1.05);
+    }
+    .feedback {
+      font-size: 1.6rem;
+      margin-top: 1.5rem;
+      min-height: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧮 Sumes visuals</h1>
+  <div class="emoji-group" id="emojiGroup">🍎 + 🍎 = ?</div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+
+  <script>
+    const questions = [
+      { emojis: "🍎 + 🍎", answer: 2, options: [1, 2, 3] },
+      { emojis: "🐻 + 🐻 + 🐻", answer: 3, options: [2, 3, 4] },
+      { emojis: "🌼 + 🌼 + 🌼 + 🌼", answer: 4, options: [3, 4, 5] },
+      { emojis: "🦋 + 🦋", answer: 2, options: [1, 2, 3] },
+      { emojis: "🚗 + 🚗 + 🚗 + 🚗 + 🚗", answer: 5, options: [4, 5, 6] },
+      { emojis: "🐠 + 🐠 + 🐠", answer: 3, options: [2, 3, 4] },
+      { emojis: "🦉 + 🦉 + 🦉", answer: 3, options: [3, 4, 5] },
+      { emojis: "🍓 + 🍓", answer: 2, options: [1, 2, 4] },
+      { emojis: "🐸 + 🐸 + 🐸 + 🐸", answer: 4, options: [3, 4, 5] },
+      { emojis: "🚀 + 🚀", answer: 2, options: [1, 2, 3] },
+      { emojis: "🍌 + 🍌 + 🍌", answer: 3, options: [2, 3, 5] },
+      { emojis: "🧸 + 🧸 + 🧸 + 🧸 + 🧸 + 🧸", answer: 6, options: [5, 6, 7] },
+      { emojis: "🦕 + 🦕 + 🦕 + 🦕 + 🦕", answer: 5, options: [4, 5, 6] },
+      { emojis: "🌟 + 🌟 + 🌟", answer: 3, options: [2, 3, 4] },
+      { emojis: "🧁 + 🧁 + 🧁 + 🧁", answer: 4, options: [3, 4, 6] }
+    ];
+
+    let current = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      document.getElementById("emojiGroup").textContent = `${q.emojis} = ?`;
+      const opts = shuffle([...q.options]);
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      document.getElementById("feedback").textContent = "";
+
+      opts.forEach(opt => {
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(choice) {
+      const q = questions[current];
+      const feedback = document.getElementById("feedback");
+      if (choice === q.answer) {
+        feedback.textContent = "✅ Molt bé!";
+        current = (current + 1) % questions.length;
+        setTimeout(showQuestion, 1500);
+      } else {
+        feedback.textContent = "❌ Torna-ho a provar!";
+      }
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>

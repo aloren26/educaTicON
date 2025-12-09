@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BrightED – Recursos Educatius</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(to bottom right, #b5d6b2, #ffffff);
+      color: #023047;
+    }
+    nav {
+      background-color: #B5D6B2;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .menu-left, .menu-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropbtn {
+      background-color: transparent;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: #023047;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+    }
+    .dropdown-content a {
+      color: #023047;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      display: block;
+    }
+    .dropdown-content a:hover {
+      background-color: #e6f2f1;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .logo img {
+      width: 180px;
+      height: auto;
+    }
+    main {
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-top: 1rem;
+    }
+    p {
+      font-size: 1.2rem;
+    }
+    .categories-section {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .category-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .category-card {
+      background-color: #e6f2f1;
+      border-radius: 10px;
+      padding: 1rem;
+      width: 250px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      text-align: center;
+      text-decoration: none;
+      color: #023047;
+    }
+    .category-card:hover {
+      transform: scale(1.03);
+      background-color: #d1ebe1;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="menu-left">
+      <div class="dropdown">
+        <button class="dropbtn">Cicle Inicial</button>
+        <div class="dropdown-content">
+          <a href="inicial_english.html">ENGLISH</a>
+          <a href="inicial_catala.html">CATALÀ</a>
+          <a href="inicial_castella.html">CASTELLÀ</a>
+          <a href="inicial_mates.html">MATES</a>
+          <a href="inicial_medi.html">MEDI</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropbtn">Cicle Mitjà</button>
+        <div class="dropdown-content">
+          <a href="mitja_english.html">ENGLISH</a>
+          <a href="mitja_catala.html">CATALÀ</a>
+          <a href="mitja_castella.html">CASTELLÀ</a>
+          <a href="mitja_mates.html">MATES</a>
+          <a href="mitja_medi.html">MEDI</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropbtn">Cicle Superior</button>
+        <div class="dropdown-content">
+          <a href="superior_english.html">ENGLISH</a>
+          <a href="superior_catala.html">CATALÀ</a>
+          <a href="superior_castella.html">CASTELLÀ</a>
+          <a href="superior_mates.html">MATES</a>
+          <a href="superior_medi.html">MEDI</a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-right">
+      <div class="dropdown">
+        <button class="dropbtn">JOCS FETS AMB IA</button>
+        <div class="dropdown-content">
+          <a href="4enratlla.html">4 en ratlla</a>
+          <a href="sudokumitja.html">Sudoku</a>
+          <a href="tangram.html">Tangram</a>
+          <a href="sopalletres.html">Sopa de lletres</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="logo">
+    <img src="ED (1).svg" alt="Logo BrightED">
+  </div>
+
+  <main>
+    <h1>BrightED – Recursos Educatius d'un mestre per a mestres</h1>
+    <p>Soc l'Alfonso, mestre d'Anglès i Educació Primària. Actualment, treballo a l'Escola Mossèn Cinto Verdaguer (Rubí). Soc un apassionat de tot allò que ens ofereixen les xarxes i ara també de la Intel·ligència Artificial. Aquesta plataforma té com a objectiu oferir recursos educatius per a Primària, organitzats per cicle i matèria i creats íntegrament amb la IA. Es troba constantment en construcció.</p>
+
+    <section class="categories-section">
+      <h2>📚 Explora per categories</h2>
+      <div class="category-grid">
+        <a class="category-card" href="categoria_ia.html">
+          <h3>Intel·ligència Artificial</h3>
+        </a>
+        <a class="category-card" href="categoria_musica.html">
+          <h3>Música</h3>
+        </a>
+        <a class="category-card" href="categoria_geografia.html">
+          <h3>Geografia</h3>
+        </a>
+        <a class="category-card" href="categoria_castella.html">
+          <h3>Castellà</h3>
+        </a>
+        <a class="category-card" href="categoria_english.html">
+          <h3>English</h3>
+        </a>
+        <a class="category-card" href="categoria_medi.html">
+          <h3>Medi</h3>
+        </a>
+        <a class="category-card" href="categoria_mates.html">
+          <h3>Matemàtiques</h3>
+        </a>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

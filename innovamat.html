@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mètode Innovamat Pas a Pas</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
+        body { font-family: 'Nunito', sans-serif; background-color: #F0F9FF; color: #1e3a8a; overflow: hidden; }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .interactive-input:focus { 
+            transform: scale(1.05); 
+            border-color: #2563EB; 
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); 
+        }
+        
+        /* Scrollbar personalitzada per a la caixa de divisió */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICONES ---
+        const IconHome = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
+        const IconRefresh = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
+        const IconCheck = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const IconInfo = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
+        const IconArrowRight = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+
+        // --- COMPONENTS BASE ---
+        const Button = ({ onClick, disabled, children, variant = 'primary', className = '' }) => {
+            const base = "px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 select-none active:scale-95 text-sm md:text-base";
+            const variants = {
+                primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed",
+                outline: "bg-white text-blue-600 border-2 border-blue-100 hover:bg-blue-50 hover:border-blue-200",
+                success: "bg-green-500 text-white hover:bg-green-600 shadow-green-200",
+            };
+            return <button onClick={onClick} disabled={disabled} className={`${base} ${variants[variant]} ${className}`}>{children}</button>;
+        };
+
+        const TopBar = ({ title, onHome }) => (
+            <div className="bg-white p-3 shadow-sm border-b border-blue-100 sticky top-0 z-50 flex justify-between items-center">
+                <h2 className="text-lg md:text-xl font-extrabold text-blue-900 truncate pr-2">{title}</h2>
+                <Button variant="outline" onClick={onHome} className="!py-1.5 !px-3 shadow-none">
+                    <IconHome /> <span className="hidden sm:inline">INICI</span>
+                </Button>
+            </div>
+        );
+
+        const ExplanationPanel = ({ title, content, levelSelector }) => (
+            <div className="bg-white p-5 rounded-2xl shadow-lg border-l-4 border-blue-500 h-full w-full lg:w-1/3 flex flex-col gap-4 overflow-y-auto">
+                <div className="flex items-center gap-2 text-blue-600 mb-1 shrink-0">
+                    <IconInfo />
+                    <h3 className="font-bold uppercase tracking-wider text-sm">Explicació</h3>
+                </div>
+                <h4 className="text-xl font-bold text-gray-800 shrink-0">{title}</h4>
+                <div className="text-gray-600 text-sm md:text-base leading-relaxed space-y-3 flex-1 overflow-y-auto pr-2 custom-scroll">
+                    {content}
+                </div>
+                {levelSelector && (
+                    <div className="mt-auto pt-4 border-t border-gray-100 shrink-0">
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-2">Canviar Tipus d'Exercici</p>
+                        {levelSelector}
+                    </div>
+                )}
+            </div>
+        );
+
+        const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        // --- 1. SUMA ---
+        const SumaView = ({ onBack }) => {
+            const [mode, setMode] = useState(null); 
+            const [data, setData] = useState(null);
+            const [step, setStep] = useState(0);
+            const [input, setInput] = useState("");
+            const [feedback, setFeedback] = useState("");
+
+            useEffect(() => { setMode(null); setData(null); }, []);
+
+            const generateData = (selectedMode) => {
+                let n1, n2;
+                if (selectedMode === 'simple') {
+                    n1 = randomInt(12, 80);
+                    const u1 = n1 % 10;
+                    n2 = randomInt(1, 9 - u1); 
+                    if(n2 === 0) n2 = 1;
+                } else {
+                    n1 = randomInt(18, 75);
+                    const u1 = n1 % 10;
+                    const minN2 = 10 - u1;
+                    n2 = randomInt(minN2, 9) + (randomInt(0, 1) * 10);
+                    if (n2 === 0) n2 = 5; 
+                }
+
+                const steps = [];
+                let current = n1;
+                
+                const n2_tens = Math.floor(n2 / 10) * 10;
+                const n2_units = n2 % 10;
+
+                if (n2_tens > 0) {
+                    steps.push({ 
+                        val: n2_tens, 
+                        target: current + n2_tens, 
+                        txt: `Sumem les desenes del ${n2} (+${n2_tens}).`,
+                        hint: `${current} + ${n2_tens} = ?`
+                    });
+                    current += n2_tens;
+                }
+
+                if (selectedMode === 'carry') {
+                    const nextTen = Math.ceil((current + 1) / 10) * 10; // +1 per assegurar salt si ja és rodó però volem mostrar l'efecte, encara que en sumes simples no sol passar
+                    const dist = nextTen - current;
+                    
+                    if (dist > 0 && n2_units >= dist) {
+                         steps.push({
+                            val: dist,
+                            target: nextTen,
+                            txt: `Busquem la desena superior (+${dist}).`,
+                            hint: `Quant falta del ${current} per arribar al ${nextTen}?`
+                        });
+                        current += dist;
+                        const remaining = n2_units - dist;
+                        if (remaining > 0) {
+                            steps.push({
+                                val: remaining,
+                                target: current + remaining,
+                                txt: `Sumem la resta d'unitats (+${remaining}).`,
+                                hint: `${current} + ${remaining} = ?`
+                            });
+                        }
+                    } else {
+                         steps.push({ val: n2_units, target: current + n2_units, txt: `Sumem les unitats (+${n2_units}).`, hint: `Càlcul directe` });
+                    }
+                } else {
+                    if (n2_units > 0) {
+                        steps.push({
+                            val: n2_units,
+                            target: current + n2_units,
+                            txt: `Sumem les unitats (+${n2_units}).`,
+                            hint: `${current} + ${n2_units} = ?`
+                        });
+                    }
+                }
+                return { n1, n2, total: n1 + n2, steps };
+            };
+
+            const selectMode = (m) => { setMode(m); setData(generateData(m)); setStep(0); setInput(""); setFeedback(""); };
+            const resetToMenu = () => { setMode(null); setData(null); };
+
+            const check = () => {
+                if (!data) return;
+                const currentS = data.steps[step];
+                if (parseInt(input) === currentS.target) {
+                    setStep(step + 1); setInput(""); setFeedback("");
+                } else {
+                    setFeedback(currentS.hint || "Torna-ho a provar.");
+                }
+            };
+
+            const renderLine = () => {
+                if(!data) return null;
+                const points = [data.n1, ...data.steps.map(s => s.target)];
+                return (
+                    <div className="relative w-full h-24 mt-6 flex items-center justify-between px-4 md:px-12">
+                        <div className="absolute left-4 right-4 h-1 bg-gray-300 top-1/2 -z-10"></div>
+                        {points.map((val, idx) => (
+                            <div key={idx} className="relative flex flex-col items-center">
+                                <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full border-4 shadow-sm transition-all duration-300 z-10 ${idx <= step ? 'bg-blue-600 border-white scale-110' : 'bg-white border-gray-300'}`}></div>
+                                <span className={`absolute top-8 font-bold text-sm md:text-lg ${idx <= step ? 'text-blue-800' : 'text-gray-400'}`}>{idx <= step ? val : '?'}</span>
+                                {idx < points.length - 1 && (idx < step || (idx === step && step < data.steps.length)) && (
+                                    <div className="absolute left-[50%] w-[80px] md:w-[150px] h-[50px] top-[-50px] pointer-events-none">
+                                        <svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none">
+                                            <path d="M0,50 Q50,0 100,50" fill="none" stroke={idx === step ? "#2563EB" : "#93C5FD"} strokeWidth="3" strokeDasharray={idx === step ? "5,5" : ""} className={idx === step ? "animate-pulse" : ""} />
+                                            <text x="50" y="15" textAnchor="middle" fill="#2563EB" fontWeight="bold" fontSize="14">+{data.steps[idx].val}</text>
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            return (
+                <div className="flex flex-col h-screen overflow-hidden">
+                    <TopBar title="Taller de Sumes" onHome={onBack} />
+                    <div className="flex flex-col lg:flex-row flex-1 p-4 gap-6 h-full overflow-hidden">
+                         <div className="w-full lg:w-1/3 shrink-0 h-full overflow-y-auto custom-scroll">
+                             <div className="grid grid-cols-1 gap-4 h-full content-start">
+                                <div className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${mode==='simple' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-100 hover:border-blue-200 bg-white shadow-sm'}`} onClick={() => selectMode('simple')}>
+                                    <h3 className="font-bold text-blue-900 mb-1 flex items-center gap-2">1. Sense portar</h3>
+                                    <p className="text-gray-500 text-sm leading-snug">Saltem les desenes i després les unitats directament. No passem del 10.</p>
+                                </div>
+                                <div className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${mode==='carry' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-100 hover:border-blue-200 bg-white shadow-sm'}`} onClick={() => selectMode('carry')}>
+                                    <h3 className="font-bold text-blue-900 mb-1 flex items-center gap-2">2. Portant-ne</h3>
+                                    <p className="text-gray-500 text-sm leading-snug">Quan ens passem de 10, fem una parada a la desena superior (l'amic del 10) abans de continuar.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 w-full lg:w-2/3 p-6 md:p-8 flex flex-col items-center justify-center relative overflow-hidden">
+                            {!mode ? (
+                                <div className="text-center animate-in fade-in">
+                                    <p className="text-xl text-gray-400 mb-4">Tria una opció de l'esquerra per començar</p>
+                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-300">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="text-4xl font-bold text-gray-800 mb-2">{data.n1} + {data.n2}</h2>
+                                    {renderLine()}
+                                    
+                                    <div className="mt-8 w-full max-w-md text-center">
+                                        {step < data.steps.length ? (
+                                            <div className="animate-in slide-up">
+                                                <p className="text-lg md:text-xl font-medium text-blue-900 mb-4 h-12 flex items-center justify-center">{data.steps[step].txt}</p>
+                                                <div className="flex gap-3 justify-center items-center">
+                                                    <input 
+                                                        type="number" 
+                                                        value={input} 
+                                                        onChange={e => setInput(e.target.value)} 
+                                                        onKeyDown={e => e.key === 'Enter' && check()}
+                                                        className="interactive-input border-2 border-blue-200 rounded-xl p-3 text-3xl w-32 text-center outline-none bg-blue-50 text-blue-900 font-bold" 
+                                                        placeholder="?"
+                                                        autoFocus
+                                                    />
+                                                    <Button onClick={check}>Comprovar</Button>
+                                                </div>
+                                                {feedback && <p className="mt-4 text-red-500 font-bold bg-red-50 p-2 rounded animate-pulse">{feedback}</p>}
+                                            </div>
+                                        ) : (
+                                            <div className="animate-in fade-in bg-green-50 p-6 rounded-2xl border border-green-200">
+                                                <h3 className="text-2xl font-bold text-green-700 mb-2 flex items-center justify-center gap-2"><IconCheck /> Perfecte!</h3>
+                                                <p className="text-green-800 mb-4">Resultat final: {data.total}</p>
+                                                <Button onClick={resetToMenu} variant="success">Següent Suma <IconRefresh /></Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 2. RESTA ---
+        const RestaView = ({ onBack }) => {
+            const [data, setData] = useState(null);
+            const [phase, setPhase] = useState(0); 
+            const [inputs, setInputs] = useState({ tens:"", units:"", rt:"", ru:"" });
+            const [msg, setMsg] = useState("");
+            const [mode, setMode] = useState("direct");
+
+            const generateData = (selectedMode) => {
+                let m, s;
+                if (selectedMode === 'direct') {
+                    do { m = randomInt(25, 99); s = randomInt(11, m - 10); } while ((m % 10) < (s % 10));
+                } else {
+                    do { m = randomInt(32, 95); s = randomInt(15, m - 5); } while ((m % 10) >= (s % 10)); 
+                }
+                return { m, s, broken: selectedMode === 'break' };
+            };
+
+            const loadLevel = (m) => {
+                setMode(m);
+                setData(generateData(m));
+                setPhase(0); setInputs({ tens:"", units:"", rt:"", ru:"" }); setMsg("");
+            };
+
+            useEffect(() => { if(!data) loadLevel('direct'); }, []);
+            if(!data) return null;
+
+            const m_tens = Math.floor(data.m / 10);
+            const m_units = data.m % 10;
+            const s_tens = Math.floor(data.s / 10);
+            const s_units = data.s % 10;
+
+            const check = () => {
+                if (data.broken) {
+                    if (phase === 0) setMsg("Mira les unitats. En tens prou? No! Primer clica la desena per trencar-la.");
+                    else if (phase === 1) {
+                         if (inputs.tens == (m_tens - 1) && inputs.units == (m_units + 10)) { setPhase(2); setMsg("Perfecte! Ara ja pots restar les unitats."); }
+                         else setMsg(`Revisa: Si treus 1 desena queden ${m_tens-1}. Si sumes 10 unitats en tens ${m_units+10}.`);
+                    } else if (phase === 2) {
+                        if (inputs.ru == (m_units + 10) - s_units) { setPhase(3); setMsg("Bé. Ara resta les desenes."); }
+                        else setMsg("Error en la resta d'unitats.");
+                    } else if (phase === 3) {
+                        if (inputs.rt == (m_tens - 1) - s_tens) { setPhase(4); setMsg("Molt bé!"); }
+                        else setMsg("Error en la resta de desenes.");
+                    }
+                } else {
+                    if (phase === 0) {
+                        if (inputs.ru == m_units - s_units) { setPhase(1); setMsg("Correcte. Ara les desenes."); }
+                        else setMsg("Error en unitats.");
+                    } else if (phase === 1) {
+                        if (inputs.rt == m_tens - s_tens) { setPhase(4); setMsg("Acabat!"); }
+                        else setMsg("Error en desenes.");
+                    }
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-screen overflow-hidden">
+                    <TopBar title="Taller de Restes" onHome={onBack} />
+                    <div className="flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
+                        <ExplanationPanel 
+                            title={mode === 'direct' ? "Resta Directa" : "Resta trencant la desena"}
+                            content={mode === 'direct' ? 
+                                <p>Tenim prou unitats al número de dalt. Restem columna per columna: primer unitats, després desenes.</p> : 
+                                <>
+                                    <p>Volem restar més unitats de les que tenim.</p>
+                                    <p className="mt-2 font-bold text-blue-600">La solució: Trencar una desena.</p>
+                                    <p>Agafem una desena, la ratllim i la passem a unitats (+10). Ara ja en tindrem prou!</p>
+                                </>
+                            }
+                            levelSelector={
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button onClick={() => loadLevel('direct')} variant={mode === 'direct' ? 'primary' : 'outline'}>Sense trencar</Button>
+                                    <Button onClick={() => loadLevel('break')} variant={mode === 'break' ? 'primary' : 'outline'}>Trencant desena</Button>
+                                </div>
+                            }
+                        />
+                        <div className="bg-white rounded-2xl shadow-xl border border-blue-50 w-full lg:w-2/3 p-4 flex flex-col items-center justify-center overflow-y-auto">
+                             <div className="grid grid-cols-2 gap-x-6 text-5xl font-mono text-gray-800 relative bg-blue-50 p-8 rounded-3xl border border-blue-100 shadow-inner scale-90 md:scale-100">
+                                <div className="h-16 flex items-end justify-center">
+                                    {data.broken && phase >= 1 && <input type="number" className="w-20 bg-white border-2 border-blue-300 rounded text-center text-blue-600 p-1 text-3xl" value={inputs.tens} onChange={e=>setInputs({...inputs, tens:e.target.value})} autoFocus/>}
+                                </div>
+                                <div className="h-16 flex items-end justify-center">
+                                    {data.broken && phase >= 1 && <input type="number" className="w-20 bg-white border-2 border-blue-300 rounded text-center text-blue-600 p-1 text-3xl" value={inputs.units} onChange={e=>setInputs({...inputs, units:e.target.value})} />}
+                                </div>
+                                <div className={`relative flex justify-center transition-colors ${data.broken && phase >= 1 ? 'text-gray-300' : ''}`}>
+                                    {m_tens}
+                                    {data.broken && phase === 0 && (
+                                        <button onClick={() => { setPhase(1); setMsg("Molt bé, has trencat la desena. Ara escriu els nous valors a dalt."); }} 
+                                            className="absolute -top-10 text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full animate-bounce border border-red-200 shadow-sm font-sans font-bold whitespace-nowrap">
+                                            Trencar
+                                        </button>
+                                    )}
+                                    {data.broken && phase >= 1 && <div className="absolute w-full h-1 bg-red-400 rotate-45 top-1/2"></div>}
+                                </div>
+                                <div className={`relative flex justify-center transition-colors ${data.broken && phase >= 1 ? 'text-gray-300' : ''}`}>
+                                    {m_units}
+                                    {data.broken && phase >= 1 && <div className="absolute w-full h-1 bg-red-400 -rotate-45 top-1/2"></div>}
+                                </div>
+                                <div className="col-span-2 border-b-4 border-gray-800 my-2 flex justify-between items-center relative"><span className="absolute left-[-30px] text-4xl font-sans text-blue-300">-</span></div>
+                                <div className="flex justify-center">{s_tens}</div>
+                                <div className="flex justify-center">{s_units}</div>
+                                <div className="flex justify-center mt-2">
+                                    {((!data.broken && phase >= 1) || (data.broken && phase >= 3)) && <input type="number" className="w-20 bg-white border-2 border-green-400 rounded text-center font-bold text-green-700 p-1" value={inputs.rt} onChange={e=>setInputs({...inputs, rt:e.target.value})} />}
+                                </div>
+                                <div className="flex justify-center mt-2">
+                                    {((!data.broken && phase >= 0) || (data.broken && phase >= 2)) && <input type="number" className="w-20 bg-white border-2 border-green-400 rounded text-center font-bold text-green-700 p-1" value={inputs.ru} onChange={e=>setInputs({...inputs, ru:e.target.value})} />}
+                                </div>
+                            </div>
+                            <div className="mt-4 w-full max-w-md text-center">
+                                {msg && <div className="bg-blue-100 text-blue-900 p-2 rounded-xl mb-2 font-bold border border-blue-200 text-sm">{msg}</div>}
+                                {phase < 4 ? <Button onClick={check} className="w-full">Validar Pas</Button> : <Button onClick={()=>loadLevel(mode)} variant="success" className="w-full">Següent Resta <IconRefresh/></Button>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 3. MULTIPLICACIÓ ---
+        const MultiView = ({ onBack }) => {
+            const [data, setData] = useState(null);
+            const [phase, setPhase] = useState(0);
+            const [vals, setVals] = useState({});
+            const [msg, setMsg] = useState("");
+            const [mode, setMode] = useState("simple");
+
+            const generateData = (m) => {
+                if (m === 'simple') {
+                    const f1 = randomInt(2, 9);
+                    const f2 = randomInt(20, 59); // Max 59
+                    // Breakdown logic
+                    const tens = Math.floor(f2/10)*10;
+                    const units = f2%10;
+                    return { f1, f2, tens, units, complex: false };
+                } else {
+                    const f1 = randomInt(11, 19);
+                    const f2 = randomInt(11, 19);
+                    return { f1, f2, complex: true };
+                }
+            };
+
+            const loadLevel = (m) => {
+                setMode(m);
+                setData(generateData(m));
+                setPhase(0); setVals({}); setMsg("");
+            };
+
+            useEffect(() => { if (!data) loadLevel('simple'); }, []);
+            if (!data) return null;
+
+            const check = () => {
+                if (!data.complex) {
+                    const p1 = data.tens * data.f1; 
+                    const p2 = data.units * data.f1; 
+                    if (phase === 0) {
+                        if (parseInt(vals.a) === p1 && parseInt(vals.b) === p2) { setPhase(1); setMsg("Bé! Ara suma les dues àrees."); }
+                        else setMsg(`Revisa: ${data.tens} x ${data.f1} i ${data.units} x ${data.f1}`);
+                    } else {
+                        if (parseInt(vals.total) === data.f1 * data.f2) { setPhase(2); setMsg("Correcte!"); }
+                        else setMsg("Error en la suma.");
+                    }
+                } else {
+                    const [d1, u1] = [10, data.f1 % 10];
+                    const [d2, u2] = [10, data.f2 % 10];
+                    if (phase === 0) {
+                        if (parseInt(vals.a) === d1*d2 && parseInt(vals.b) === d1*u2 && parseInt(vals.c) === u1*d2 && parseInt(vals.d) === u1*u2) {
+                            setPhase(1); setMsg("Perfecte! Ara suma les 4 parts.");
+                        } else setMsg("Calcula l'àrea de cada rectangle.");
+                    } else {
+                        if (parseInt(vals.total) === data.f1 * data.f2) { setPhase(2); setMsg("Fantàstic!"); }
+                        else setMsg("Error en la suma.");
+                    }
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-screen">
+                    <TopBar title="Taller de Multiplicacions" onHome={onBack} />
+                    <div className="flex flex-col lg:flex-row flex-1 p-4 gap-6">
+                        <ExplanationPanel 
+                            title={mode === 'simple' ? "Model d'Àrea (1 x 2 xifres)" : "Model d'Àrea (2 x 2 xifres)"}
+                            content={
+                                <div>
+                                    <p>Multiplicar és calcular l'àrea d'un rectangle.</p>
+                                    <p className="mt-2">Si els números són difícils (com 42 x 6), partim el número gran en <strong>desenes + unitats</strong>.</p>
+                                    <p className="mt-2">Exemple: 42 es converteix en 40 i 2. Així fem 40x6 i 2x6, que és molt més fàcil!</p>
+                                </div>
+                            }
+                            levelSelector={
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button onClick={() => loadLevel('simple')} variant={mode === 'simple' ? 'primary' : 'outline'}>1 xifra</Button>
+                                    <Button onClick={() => loadLevel('complex')} variant={mode === 'complex' ? 'primary' : 'outline'}>2 xifres</Button>
+                                </div>
+                            }
+                        />
+                        <div className="bg-white rounded-2xl shadow-xl border border-blue-50 w-full lg:w-2/3 p-8 flex flex-col items-center justify-center">
+                            {!data.complex ? (
+                                <div className="flex flex-col items-center animate-in slide-up">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">{data.f1} x {data.f2}</h2>
+                                    <div className="flex w-full mb-2 font-bold text-gray-400 text-xl pl-8">
+                                        <div className="flex-1 text-center border-b-2 border-gray-200 pb-2">{data.tens}</div>
+                                        <div className="w-32 text-center border-b-2 border-gray-200 pb-2">{data.units}</div>
+                                    </div>
+                                    <div className="flex">
+                                        <div className="flex flex-col justify-center pr-4 font-bold text-2xl text-gray-400 border-r-2 border-gray-200">{data.f1}</div>
+                                        <div className="flex shadow-lg rounded-lg overflow-hidden border-2 border-white">
+                                            <div className="w-48 h-32 bg-blue-100 flex items-center justify-center border-r border-white relative">
+                                                <span className="absolute text-4xl text-blue-200 font-bold opacity-60 z-0">{data.tens}x{data.f1}</span>
+                                                <input type="number" className="z-10 w-24 p-2 text-center font-bold text-2xl rounded shadow bg-white/90 outline-none focus:ring-2 focus:ring-blue-400" value={vals.a} onChange={e=>setVals({...vals, a:e.target.value})} placeholder="?" disabled={phase>0}/>
+                                            </div>
+                                            <div className="w-24 h-32 bg-red-100 flex items-center justify-center relative">
+                                                <span className="absolute text-3xl text-red-200 font-bold opacity-60 z-0">{data.units}x{data.f1}</span>
+                                                <input type="number" className="z-10 w-16 p-2 text-center font-bold text-2xl rounded shadow bg-white/90 outline-none focus:ring-2 focus:ring-red-400" value={vals.b} onChange={e=>setVals({...vals, b:e.target.value})} placeholder="?" disabled={phase>0}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center scale-90 md:scale-100">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">{data.f1} x {data.f2}</h2>
+                                    <div className="flex w-full mb-2 font-bold text-gray-400 text-xl pl-12">
+                                        <div className="w-32 text-center border-b-2 border-gray-200">10</div>
+                                        <div className="w-24 text-center border-b-2 border-gray-200">{data.f2%10}</div>
+                                    </div>
+                                    <div className="flex">
+                                        <div className="flex flex-col justify-between py-6 pr-2 font-bold text-xl text-gray-400 border-r-2 border-gray-200">
+                                            <div className="h-24 flex items-center">10</div>
+                                            <div className="h-16 flex items-center">{data.f1%10}</div>
+                                        </div>
+                                        <div className="flex flex-col shadow-xl rounded-lg overflow-hidden border-2 border-white">
+                                            <div className="flex">
+                                                <div className="w-32 h-24 bg-blue-100 border border-white flex items-center justify-center"><input type="number" className="w-20 p-1 text-center font-bold bg-white/90 rounded outline-none" placeholder="10x10" value={vals.a} onChange={e=>setVals({...vals, a:e.target.value})} disabled={phase>0}/></div>
+                                                <div className="w-24 h-24 bg-blue-50 border border-white flex items-center justify-center"><input type="number" className="w-16 p-1 text-center font-bold bg-white/90 rounded outline-none" placeholder={`10x${data.f2%10}`} value={vals.b} onChange={e=>setVals({...vals, b:e.target.value})} disabled={phase>0}/></div>
+                                            </div>
+                                            <div className="flex">
+                                                <div className="w-32 h-16 bg-blue-50 border border-white flex items-center justify-center"><input type="number" className="w-20 p-1 text-center font-bold bg-white/90 rounded outline-none" placeholder={`${data.f1%10}x10`} value={vals.c} onChange={e=>setVals({...vals, c:e.target.value})} disabled={phase>0}/></div>
+                                                <div className="w-24 h-16 bg-red-50 border border-white flex items-center justify-center"><input type="number" className="w-16 p-1 text-center font-bold bg-white/90 rounded outline-none" placeholder={`${data.f1%10}x${data.f2%10}`} value={vals.d} onChange={e=>setVals({...vals, d:e.target.value})} disabled={phase>0}/></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="mt-8 w-full max-w-md text-center">
+                                {msg && <div className="p-3 mb-4 bg-blue-50 rounded-xl font-bold text-blue-800 border border-blue-100">{msg}</div>}
+                                {phase === 1 && <div className="flex justify-center gap-3 text-2xl font-mono mb-4 items-center animate-in slide-up"><span>Total:</span><input type="number" className="border-2 border-blue-400 w-32 text-center rounded-lg p-1 outline-none focus:ring-2 focus:ring-blue-300" value={vals.total} onChange={e=>setVals({...vals, total:e.target.value})} autoFocus/></div>}
+                                {phase < 2 ? <Button onClick={check} className="w-full">Comprovar</Button> : <Button onClick={()=>loadLevel(mode)} variant="success" className="w-full">Següent Multiplicació <IconRefresh/></Button>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. DIVISIÓ ---
+        const DivisioView = ({ onBack }) => {
+            const [data, setData] = useState(null);
+            const [history, setHistory] = useState([]);
+            const [rem, setRem] = useState(0);
+            const [input, setInput] = useState("");
+            const [msg, setMsg] = useState("");
+
+            const items = [
+                { name: "caramels", target: "amics" },
+                { name: "pilotes", target: "cistelles" },
+                { name: "cromos", target: "àlbums" },
+                { name: "samarretes", target: "equips" },
+                { name: "pomes", target: "caixes" },
+                { name: "llapis", target: "estoigs" },
+                { name: "ous", target: "oueres" }
+            ];
+
+            const loadLevel = () => {
+                const d = randomInt(3, 9);
+                const q = randomInt(15, 45); 
+                const item = items[randomInt(0, items.length - 1)];
+                setData({ d, total: d * q, item });
+                setRem(d * q);
+                setHistory([]);
+                setMsg(""); setInput("");
+            };
+
+            useEffect(() => { if (!data) loadLevel(); }, []);
+            if (!data) return null;
+
+            const handleInput = () => {
+                const val = parseInt(input);
+                if (!val || val <= 0) return;
+                const sub = val * data.d;
+                if (sub > rem) { setMsg("Massa gran! No pots repartir el que no tens."); return; }
+                const newR = rem - sub;
+                setHistory([...history, { mul: val, sub, newR }]);
+                setRem(newR);
+                setInput("");
+                setMsg(newR === 0 ? "Ben fet! Ja no queda res!" : "Continua repartint el que queda.");
+            };
+
+            const totalQ = history.reduce((a, b) => a + b.mul, 0);
+
+            return (
+                <div className="flex flex-col h-screen">
+                    <TopBar title="Taller de Divisions" onHome={onBack} />
+                    <div className="flex flex-col lg:flex-row flex-1 p-4 gap-6">
+                         <ExplanationPanel 
+                            title="Divisió en Caixa"
+                            content={
+                                <div>
+                                    <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 my-4 text-purple-900 shadow-sm">
+                                        <p className="font-bold text-lg mb-2">Enunciat del problema:</p>
+                                        <p className="leading-relaxed">"Tens <strong>{data.total} {data.item.name}</strong> i els has de repartir en <strong>{data.d} {data.item.target}</strong>. Quants {data.item.name} poses a cada lloc?"</p>
+                                    </div>
+                                    <p>No cal endevinar-ho de cop. Vés posant grups petits (10 a cada lloc, 5 a cada lloc...) i mira quants te'n queden.</p>
+                                </div>
+                            }
+                        />
+
+                        <div className="bg-white rounded-2xl shadow-xl border border-blue-50 w-full lg:w-2/3 p-8 flex flex-col items-center">
+                            <div className="w-full max-w-md font-mono text-2xl">
+                                <div className="flex justify-between border-b-4 border-gray-800 pb-2 mb-4">
+                                    <span className="pl-4 font-bold text-4xl text-gray-800">{data.total}</span>
+                                    <div className="border-l-4 border-gray-800 pl-6">
+                                        <span className="bg-gray-100 px-4 py-1 rounded font-bold text-blue-800">{data.d}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scroll">
+                                    {history.map((h, i) => (
+                                        <div key={i} className="flex justify-between animate-in slide-up items-center">
+                                            <div className="flex flex-col">
+                                                <span className="text-red-400 text-lg">- {h.sub}</span>
+                                                <span className="border-t-2 border-gray-300 pl-2 font-bold">{h.newR}</span>
+                                            </div>
+                                            <div className="border-l-2 border-gray-800 pl-6 text-blue-600 font-bold text-3xl">{h.mul}</div>
+                                        </div>
+                                    ))}
+                                    
+                                    {rem > 0 && (
+                                        <div className="flex justify-between bg-blue-50 p-3 rounded-xl items-center mt-4 border border-blue-200 shadow-sm">
+                                            <div className="text-sm text-blue-800 flex-1 pr-2">
+                                                Quants en poses a cada {data.item.target.slice(0, -1)}?
+                                            </div>
+                                            <div className="border-l-2 border-blue-200 pl-4 flex gap-2">
+                                                <input 
+                                                    type="number" 
+                                                    value={input} 
+                                                    onChange={e=>setInput(e.target.value)} 
+                                                    onKeyDown={e=>e.key==='Enter' && handleInput()}
+                                                    className="w-20 text-center font-bold border-2 border-blue-300 rounded p-1 outline-none focus:border-blue-600 bg-white" 
+                                                    placeholder="?" 
+                                                    autoFocus
+                                                />
+                                                <Button onClick={handleInput} className="!py-0 !px-3 text-sm">OK</Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {rem === 0 && (
+                                    <div className="mt-6 pt-4 border-t-4 border-gray-800 flex justify-between items-center bg-green-50 p-4 rounded-xl animate-in slide-up">
+                                        <span className="text-sm font-sans uppercase text-gray-500 font-bold">Residu: 0</span>
+                                        <div className="text-right">
+                                            <span className="text-sm font-sans uppercase text-gray-500 block">Total</span>
+                                            <span className="text-5xl font-bold text-green-700">{totalQ}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="mt-6 flex flex-col gap-2">
+                                     {msg && <div className="text-center text-sm font-bold text-blue-600 bg-white border border-blue-100 p-2 rounded">{msg}</div>}
+                                     {rem === 0 && <Button onClick={loadLevel} variant="success" className="w-full mt-2">Nova Divisió <IconRefresh/></Button>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MENU ---
+        const App = () => {
+            const [view, setView] = useState("menu");
+
+            if (view === "suma") return <SumaView onBack={() => setView("menu")} />;
+            if (view === "resta") return <RestaView onBack={() => setView("menu")} />;
+            if (view === "multi") return <MultiView onBack={() => setView("menu")} />;
+            if (view === "divi") return <DivisioView onBack={() => setView("menu")} />;
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-blue-50 via-white to-blue-50 relative overflow-hidden">
+                    <div className="absolute top-4 left-6 text-xs text-gray-400 font-bold uppercase tracking-widest">
+                        Creat per Alfonso LM
+                        <span className="block text-[10px] text-gray-300 normal-case mt-0.5">aloren26@xtec.cat</span>
+                    </div>
+                    <div className="absolute top-4 right-6 text-xs text-gray-400 font-bold uppercase tracking-widest text-right">
+                        Escola Mossèn Cinto Verdaguer
+                        <span className="block text-[10px] text-gray-300">(RUBÍ)</span>
+                    </div>
+
+                    <div className="text-center mb-8 max-w-3xl animate-in fade-in mt-12">
+                        <span className="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest uppercase mb-6 inline-block shadow-sm">Educació Primària</span>
+                        <h1 className="text-4xl md:text-6xl font-extrabold text-blue-900 mb-4 tracking-tight leading-tight">
+                            EL MÈTODE INNOVAMAT <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">PAS A PAS</span>
+                        </h1>
+                        <p className="text-xl text-gray-500 font-medium">Guia interactiva per a infants, famílies i docents.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl px-4">
+                        <MenuCard title="Suma" desc="Salts a la recta numèrica" icon="+" color="green" onClick={() => setView("suma")} />
+                        <MenuCard title="Resta" desc="Descomposició vertical" icon="−" color="blue" onClick={() => setView("resta")} />
+                        <MenuCard title="Multiplicació" desc="Model geomètric (Àrea)" icon="×" color="yellow" onClick={() => setView("multi")} />
+                        <MenuCard title="Divisió" desc="Caixa de quocients parcials" icon="÷" color="purple" onClick={() => setView("divi")} />
+                    </div>
+                </div>
+            );
+        };
+
+        const MenuCard = ({ title, desc, icon, color, onClick }) => {
+            const colors = {
+                green: "bg-green-500 hover:bg-green-600 shadow-green-200",
+                blue: "bg-blue-500 hover:bg-blue-600 shadow-blue-200",
+                yellow: "bg-yellow-500 hover:bg-yellow-600 shadow-yellow-200",
+                purple: "bg-purple-500 hover:bg-purple-600 shadow-purple-200"
+            };
+            return (
+                <button onClick={onClick} className="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-blue-100 transition-all duration-300 flex items-center gap-6 text-left active:scale-[0.98]">
+                    <div className={`${colors[color]} w-20 h-20 rounded-2xl flex items-center justify-center text-4xl text-white font-bold shadow-lg group-hover:rotate-6 transition-transform`}>{icon}</div>
+                    <div><h3 className="text-2xl font-bold text-gray-800 group-hover:text-blue-700">{title}</h3><p className="text-gray-500 font-medium mt-1">{desc}</p></div>
+                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-blue-400"><IconArrowRight /></div>
+                </button>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

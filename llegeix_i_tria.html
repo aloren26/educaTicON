@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Llegeix i tria</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #023047;
+    }
+    .sentence {
+      font-size: 1.8rem;
+      margin: 1rem 0;
+      font-weight: bold;
+    }
+    .emoji-options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .emoji-button {
+      font-size: 3rem;
+      background-color: white;
+      border: 3px solid #ccc;
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .emoji-button:hover {
+      transform: scale(1.1);
+      background-color: #e0f7fa;
+    }
+    .feedback {
+      font-size: 1.5rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 Llegeix i tria</h1>
+  <div class="sentence" id="sentence">La nena menja una poma.</div>
+  <div class="emoji-options" id="emoji-options"></div>
+  <div class="feedback" id="feedback"></div>
+
+  <script>
+    const questions = [
+      {
+        sentence: "La nena menja una poma.",
+        correct: "🍎",
+        options: ["🍎", "🍌", "🍇"]
+      },
+      {
+        sentence: "El nen juga amb una pilota.",
+        correct: "⚽",
+        options: ["⚽", "🎨", "🧸"]
+      },
+      {
+        sentence: "Veig un peix a l’aigua.",
+        correct: "🐟",
+        options: ["🐟", "🐱", "🐘"]
+      },
+      {
+        sentence: "El sol brilla al cel.",
+        correct: "☀️",
+        options: ["☀️", "🌧️", "🌙"]
+      },
+      {
+        sentence: "La mare cuina sopa.",
+        correct: "🥣",
+        options: ["🥣", "🍕", "🍔"]
+      },
+      {
+        sentence: "El pare llegeix un llibre.",
+        correct: "📖",
+        options: ["📖", "🎧", "📱"]
+      }
+    ];
+
+    let current = 0;
+
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    questions.forEach(q => {
+      q.options = shuffle(q.options);
+    });
+
+    function render() {
+      const q = questions[current];
+      document.getElementById("sentence").textContent = q.sentence;
+      const optionsDiv = document.getElementById("emoji-options");
+      optionsDiv.innerHTML = "";
+      document.getElementById("feedback").textContent = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement("div");
+        btn.className = "emoji-button";
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(choice) {
+      const feedback = document.getElementById("feedback");
+      const q = questions[current];
+      if (choice === q.correct) {
+        feedback.textContent = "✅ Molt bé!";
+        current = (current + 1) % questions.length;
+        setTimeout(() => {
+          render();
+        }, 1500);
+      } else {
+        feedback.textContent = "❌ Torna-ho a provar!";
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

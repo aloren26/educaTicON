@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tangram Interactiu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #023047;
+    }
+    .puzzle-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .shape {
+      width: 80px;
+      height: 80px;
+      background-color: #B5D6B2;
+      margin: 10px;
+      cursor: grab;
+      touch-action: none;
+      transform: rotate(0deg);
+    }
+    .target {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      border: 2px dashed #ccc;
+    }
+    .matched {
+      border: 2px solid #4caf50;
+    }
+    #status {
+      font-size: 1.2rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔷 Tangram Interactiu</h1>
+  <p>Arrossega les peces a les seves posicions correctes!</p>
+  <div class="puzzle-area" id="targets"></div>
+  <div class="puzzle-area" id="shapes"></div>
+  <div id="status"></div>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+  <script>
+    const targets = document.getElementById('targets');
+    const shapes = document.getElementById('shapes');
+    const status = document.getElementById('status');
+    const winSound = document.getElementById('winSound');
+    const totalPieces = 7;
+    let matchedCount = 0;
+
+    for (let i = 0; i < totalPieces; i++) {
+      const target = document.createElement('div');
+      target.classList.add('target');
+      target.dataset.id = i;
+      targets.appendChild(target);
+
+      const shape = document.createElement('div');
+      shape.classList.add('shape');
+      shape.setAttribute('draggable', true);
+      shape.dataset.id = i;
+      shape.textContent = '⬤';
+      shape.style.backgroundColor = `hsl(${i * 40}, 60%, 70%)`;
+      shape.addEventListener('dragstart', dragStart);
+      shapes.appendChild(shape);
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.dataset.id);
+    }
+
+    document.querySelectorAll('.target').forEach(target => {
+      target.addEventListener('dragover', e => e.preventDefault());
+      target.addEventListener('drop', e => {
+        e.preventDefault();
+        const draggedId = e.dataTransfer.getData('text/plain');
+        const targetId = target.dataset.id;
+        if (draggedId === targetId && !target.hasChildNodes()) {
+          const dragged = document.querySelector(`.shape[data-id='${draggedId}']`);
+          target.appendChild(dragged);
+          target.classList.add('matched');
+          matchedCount++;
+          checkWin();
+        }
+      });
+    });
+
+    function checkWin() {
+      if (matchedCount === totalPieces) {
+        status.textContent = '🎉 Has completat el Tangram!';
+        winSound.play();
+      }
+    }
+  </script>
+</body>
+</html>

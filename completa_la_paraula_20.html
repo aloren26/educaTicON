@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Completa la paraula (20 paraules)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #023047;
+    }
+    .image {
+      font-size: 5rem;
+      margin: 1rem 0;
+    }
+    .word {
+      font-size: 2.5rem;
+      margin: 1rem 0;
+      letter-spacing: 0.2rem;
+    }
+    .options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .option {
+      background-color: white;
+      border: 3px solid #ccc;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .option:hover {
+      transform: scale(1.1);
+      background-color: #e0f7fa;
+    }
+    .feedback {
+      font-size: 1.5rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔤 Completa la paraula</h1>
+  <div class="image" id="image">🐱</div>
+  <div class="word" id="word">g _ t</div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+
+  <script>
+    let words = [
+      { full: "gat", missing: "g _ t", answer: "a", emoji: "🐱", options: ["a", "e", "o"] },
+      { full: "sol", missing: "s _ l", answer: "o", emoji: "☀️", options: ["a", "o", "u"] },
+      { full: "mà", missing: "m _", answer: "à", emoji: "✋", options: ["a", "à", "e"] },
+      { full: "peu", missing: "p _ u", answer: "e", emoji: "🦶", options: ["a", "e", "i"] },
+      { full: "flor", missing: "f _ o r", answer: "l", emoji: "🌸", options: ["r", "l", "n"] },
+      { full: "ou", missing: "_ u", answer: "o", emoji: "🥚", options: ["o", "a", "e"] },
+      { full: "gos", missing: "g _ s", answer: "o", emoji: "🐶", options: ["a", "o", "e"] },
+      { full: "ull", missing: "u _ _", answer: "ll", emoji: "👁️", options: ["l", "ll", "n"] },
+      { full: "ulleres", missing: "u _ _ eres", answer: "ll", emoji: "👓", options: ["l", "ll", "rr"] },
+      { full: "taula", missing: "t _ u l a", answer: "a", emoji: "🪑", options: ["a", "e", "o"] },
+      { full: "sopa", missing: "s _ p a", answer: "o", emoji: "🥣", options: ["o", "u", "a"] },
+      { full: "poma", missing: "p _ m a", answer: "o", emoji: "🍎", options: ["o", "a", "e"] },
+      { full: "nina", missing: "n _ n a", answer: "i", emoji: "🧸", options: ["i", "e", "a"] },
+      { full: "peix", missing: "p _ i x", answer: "e", emoji: "🐟", options: ["e", "a", "o"] },
+      { full: "lluna", missing: "_ _ una", answer: "ll", emoji: "🌙", options: ["l", "ll", "n"] },
+      { full: "dent", missing: "d _ n t", answer: "e", emoji: "🦷", options: ["a", "e", "i"] },
+      { full: "nas", missing: "n _ s", answer: "a", emoji: "👃", options: ["a", "e", "o"] },
+      { full: "moto", missing: "m _ t o", answer: "o", emoji: "🏍️", options: ["o", "a", "e"] },
+      { full: "globus", missing: "g _ o b u s", answer: "l", emoji: "🎈", options: ["l", "r", "t"] },
+      { full: "rei", missing: "r _ i", answer: "e", emoji: "🤴", options: ["a", "e", "i"] }
+    ];
+
+    let current = 0;
+
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    words = shuffle(words);
+
+    function render() {
+      const data = words[current];
+      document.getElementById("image").textContent = data.emoji;
+      document.getElementById("word").textContent = data.missing;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      document.getElementById("feedback").textContent = "";
+
+      data.options.forEach(opt => {
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(choice) {
+      const data = words[current];
+      const feedback = document.getElementById("feedback");
+      if (choice === data.answer) {
+        feedback.textContent = "✅ Molt bé! La paraula és: " + data.full;
+        current = (current + 1) % words.length;
+        setTimeout(() => {
+          render();
+        }, 1500);
+      } else {
+        feedback.textContent = "❌ Torna-ho a provar!";
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

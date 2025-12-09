@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sudoku - Nivell Mitjà</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #023047;
+    }
+    .sudoku {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      max-width: 360px;
+      margin: 2rem auto;
+      background-color: #000;
+    }
+    .cell {
+      width: 100%;
+      aspect-ratio: 1;
+      font-size: 1.5rem;
+      text-align: center;
+      border: none;
+      outline: none;
+      background-color: #fff;
+      color: #023047;
+    }
+    .cell:disabled {
+      background-color: #e0e0e0;
+      color: #555;
+    }
+    #status {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+    }
+    .check-button {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background-color: #B5D6B2;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #023047;
+    }
+    .check-button:hover {
+      background-color: #a1c4a1;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧩 Sudoku – Nivell Mitjà</h1>
+  <div id="board" class="sudoku"></div>
+  <button class="check-button" onclick="checkSudoku()">Comprova</button>
+  <div id="status"></div>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+  <script>
+    const board = document.getElementById('board');
+    const winSound = document.getElementById('winSound');
+    const status = document.getElementById('status');
+
+    let solution = [];
+    let puzzle = [];
+
+    function generateSudoku() {
+      // Generar una graella de solució completa (mètode senzill)
+      const base = [...Array(9).keys()].map(i => (i + 1));
+      const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+      const rotate = (arr, n) => arr.slice(n).concat(arr.slice(0, n));
+
+      const rowShift = [0, 3, 6, 1, 4, 7, 2, 5, 8];
+      const baseRow = shuffle(base);
+
+      solution = rowShift.map(i => rotate(baseRow, i));
+
+      // Crear puzzle amb buits
+      puzzle = solution.map(row => row.map(val => Math.random() < 0.5 ? val : null));
+    }
+
+    function drawBoard() {
+      board.innerHTML = '';
+      puzzle.forEach((row, r) => {
+        row.forEach((val, c) => {
+          const input = document.createElement('input');
+          input.classList.add('cell');
+          input.setAttribute('maxlength', '1');
+          input.dataset.row = r;
+          input.dataset.col = c;
+          input.type = 'text';
+
+          if (val) {
+            input.value = val;
+            input.disabled = true;
+          }
+
+          board.appendChild(input);
+        });
+      });
+    }
+
+    function checkSudoku() {
+      const cells = document.querySelectorAll('.cell');
+      let correct = true;
+      cells.forEach(cell => {
+        const r = +cell.dataset.row;
+        const c = +cell.dataset.col;
+        const val = +cell.value;
+        if (solution[r][c] !== val) correct = false;
+      });
+      if (correct) {
+        status.textContent = '🎉 Molt bé! Has completat el Sudoku!';
+        winSound.play();
+      } else {
+        status.textContent = '❌ Alguna casella no és correcta...';
+      }
+    }
+
+    generateSudoku();
+    drawBoard();
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sopa de Lletres – Paraules Amagades</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #f0f8ff;
+      color: #023047;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+      max-width: 100%;
+      margin: 0 auto 2rem;
+      gap: 2px;
+    }
+    .cell {
+      background: #fff;
+      border: 1px solid #ccc;
+      font-weight: bold;
+      font-size: 1rem;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cell.selected {
+      background-color: #b5d6b2;
+    }
+    .word-list {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .found {
+      text-decoration: line-through;
+      color: green;
+    }
+    @media (min-width: 400px) {
+      .grid {
+        grid-template-columns: repeat(14, 30px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔤 Paraules Amagades</h1>
+  <p>Troba les paraules amagades a la graella!</p>
+  <div class="grid" id="grid"></div>
+  <div class="word-list" id="wordList"></div>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+  <script>
+    const words = [
+      'GAT', 'GOS', 'PEIX', 'TIGRE', 'ELEFANT',
+      'VERMELL', 'BLAU', 'GROC', 'VERD', 'LILA',
+      'BARCELONA', 'GIRONA', 'TARRAGONA', 'LLEIDA',
+      'GENER', 'FEBRER', 'MARÇ', 'ABRIL', 'MAIG', 'JUNY'
+    ];
+
+    const gridSize = 14;
+    const grid = document.getElementById('grid');
+    const wordList = document.getElementById('wordList');
+    const winSound = document.getElementById('winSound');
+    const selectedCells = [];
+    const placedWords = [];
+    let letters = Array.from({ length: gridSize * gridSize }, () => '');
+
+    function getIndex(row, col) {
+      return row * gridSize + col;
+    }
+
+    function placeWord(word) {
+      const dir = Math.random() > 0.5 ? 'H' : 'V';
+      const maxRow = dir === 'H' ? gridSize : gridSize - word.length;
+      const maxCol = dir === 'V' ? gridSize : gridSize - word.length;
+      const row = Math.floor(Math.random() * maxRow);
+      const col = Math.floor(Math.random() * maxCol);
+
+      for (let i = 0; i < word.length; i++) {
+        const r = dir === 'H' ? row : row + i;
+        const c = dir === 'H' ? col + i : col;
+        const index = getIndex(r, c);
+        if (letters[index] && letters[index] !== word[i]) return false;
+      }
+
+      for (let i = 0; i < word.length; i++) {
+        const r = dir === 'H' ? row : row + i;
+        const c = dir === 'H' ? col + i : col;
+        letters[getIndex(r, c)] = word[i];
+      }
+      placedWords.push(word);
+      return true;
+    }
+
+    function fillEmptyCells() {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for (let i = 0; i < letters.length; i++) {
+        if (!letters[i]) {
+          letters[i] = alphabet[Math.floor(Math.random() * alphabet.length)];
+        }
+      }
+    }
+
+    function renderGrid() {
+      grid.innerHTML = '';
+      letters.forEach((char, i) => {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.textContent = char;
+        cell.dataset.index = i;
+        grid.appendChild(cell);
+        cell.addEventListener('click', () => toggleSelect(cell));
+      });
+    }
+
+    function toggleSelect(cell) {
+      cell.classList.toggle('selected');
+      if (cell.classList.contains('selected')) {
+        selectedCells.push(cell);
+      } else {
+        const index = selectedCells.indexOf(cell);
+        if (index > -1) selectedCells.splice(index, 1);
+      }
+      checkSelected();
+    }
+
+    function checkSelected() {
+      const word = selectedCells.map(c => c.textContent).join('');
+      if (words.includes(word) && !placedWords.includes(word + '_FOUND')) {
+        placedWords.push(word + '_FOUND');
+        selectedCells.forEach(c => c.classList.add('found'));
+        selectedCells.forEach(c => c.classList.remove('selected'));
+        selectedCells.length = 0;
+        updateWordList();
+        checkWin();
+      }
+    }
+
+    function updateWordList() {
+      wordList.innerHTML = '<h3>Paraules a trobar:</h3><ul>' +
+        words.map(w => `<li class="${placedWords.includes(w + '_FOUND') ? 'found' : ''}">${w}</li>`).join('') +
+        '</ul>';
+    }
+
+    function checkWin() {
+      if (words.every(w => placedWords.includes(w + '_FOUND'))) {
+        winSound.play();
+        wordList.innerHTML += '<p><strong>🎉 Molt bé! Has trobat totes les paraules!</strong></p>';
+      }
+    }
+
+    // Inicialització
+    words.forEach(word => {
+      let tries = 0;
+      while (!placeWord(word) && tries < 100) tries++;
+    });
+    fillEmptyCells();
+    renderGrid();
+    updateWordList();
+  </script>
+</body>
+</html>

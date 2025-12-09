@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory – Word + Image</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      color: #264653;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 100px);
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .card {
+      background-color: white;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      overflow: hidden;
+    }
+    .card img {
+      max-width: 80px;
+      max-height: 80px;
+    }
+    .hidden {
+      background-color: #B5D6B2;
+      color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory – Word + Image</h1>
+  <div class="grid" id="game-board"></div>
+
+  <script>
+    const pairs = [
+      ["cat", "🐱"], ["dog", "🐶"], ["cow", "🐮"], ["duck", "🦆"],
+      ["elephant", "🐘"], ["frog", "🐸"], ["horse", "🐴"], ["lion", "🦁"],
+      ["monkey", "🐵"], ["pig", "🐷"], ["sheep", "🐑"], ["tiger", "🐯"]
+    ];
+
+    let cards = [];
+    pairs.forEach(([word, emoji]) => {
+      cards.push({ content: word, type: 'text' });
+      cards.push({ content: emoji, type: 'emoji' });
+    });
+
+    cards = cards.sort(() => 0.5 - Math.random());
+
+    const board = document.getElementById("game-board");
+
+    let flipped = [];
+    let matched = [];
+
+    function renderBoard() {
+      board.innerHTML = "";
+      cards.forEach((card, i) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        if (!matched.includes(i) && !flipped.includes(i)) {
+          div.classList.add("hidden");
+          div.innerHTML = "❓";
+        } else {
+          div.innerHTML = card.type === 'text' ? card.content : card.content;
+        }
+        div.onclick = () => flipCard(i);
+        board.appendChild(div);
+      });
+    }
+
+    function flipCard(index) {
+      if (flipped.length === 2 || flipped.includes(index) || matched.includes(index)) return;
+      flipped.push(index);
+      renderBoard();
+      if (flipped.length === 2) {
+        const [i, j] = flipped;
+        if (
+          cards[i].type !== cards[j].type &&
+          cards[i].content === cards[j].content
+        ) {
+          matched.push(i, j);
+        }
+        setTimeout(() => {
+          flipped = [];
+          renderBoard();
+        }, 1000);
+      }
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>

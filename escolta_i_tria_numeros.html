@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escolta i tria el número</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #023047;
+    }
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .number-option {
+      font-size: 2.5rem;
+      background-color: white;
+      border: 3px solid #ccc;
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .number-option:hover {
+      transform: scale(1.1);
+      background-color: #e0f7fa;
+    }
+    .feedback {
+      font-size: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background-color: #00a8e8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔢 Escolta i tria el número</h1>
+  <button onclick="playSound()">Escolta</button>
+  <div class="option-grid" id="option-grid"></div>
+  <div class="feedback" id="feedback"></div>
+
+  <script>
+    const numbers = [
+      "one", "two", "three", "four", "five",
+      "six", "seven", "eight", "nine", "ten"
+    ];
+
+    let correct = null;
+
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    function newRound() {
+      const options = shuffle(numbers).slice(0, 4);
+      correct = options[Math.floor(Math.random() * 4)];
+      const grid = document.getElementById("option-grid");
+      const feedback = document.getElementById("feedback");
+      feedback.textContent = "";
+      grid.innerHTML = "";
+      options.forEach(number => {
+        const div = document.createElement("div");
+        div.className = "number-option";
+        div.textContent = number;
+        div.onclick = () => checkAnswer(number);
+        grid.appendChild(div);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const feedback = document.getElementById("feedback");
+      if (selected === correct) {
+        feedback.textContent = "✅ Molt bé!";
+        setTimeout(() => {
+          newRound();
+        }, 1000);
+      } else {
+        feedback.textContent = "❌ Torna-ho a provar!";
+      }
+    }
+
+    function playSound() {
+      const msg = new SpeechSynthesisUtterance(correct);
+      msg.lang = "en-US";
+      msg.rate = 0.9;
+      msg.pitch = 1;
+      msg.volume = 1;
+      window.speechSynthesis.speak(msg);
+    }
+
+    newRound();
+  </script>
+</body>
+</html>
