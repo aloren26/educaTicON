@@ -28,7 +28,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); 
         }
         
-        /* Scrollbar personalitzada per a la caixa de divisió */
+        /* Scrollbar personalitzada */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -131,7 +131,7 @@
                 }
 
                 if (selectedMode === 'carry') {
-                    const nextTen = Math.ceil((current + 1) / 10) * 10; // +1 per assegurar salt si ja és rodó però volem mostrar l'efecte, encara que en sumes simples no sol passar
+                    const nextTen = Math.ceil((current + 0.1) / 10) * 10;
                     const dist = nextTen - current;
                     
                     if (dist > 0 && n2_units >= dist) {
@@ -268,7 +268,7 @@
             );
         };
 
-        // --- 2. RESTA ---
+        // --- 2. RESTA (AMB LÍNIA A SOTA) ---
         const RestaView = ({ onBack }) => {
             const [data, setData] = useState(null);
             const [phase, setPhase] = useState(0); 
@@ -329,34 +329,37 @@
                     <TopBar title="Taller de Restes" onHome={onBack} />
                     <div className="flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
                         <ExplanationPanel 
-                            title={mode === 'direct' ? "Resta Directa" : "Resta trencant la desena"}
+                            title={mode === 'direct' ? "Resta sense portar" : "Resta portant-ne"}
                             content={mode === 'direct' ? 
                                 <p>Tenim prou unitats al número de dalt. Restem columna per columna: primer unitats, després desenes.</p> : 
                                 <>
                                     <p>Volem restar més unitats de les que tenim.</p>
                                     <p className="mt-2 font-bold text-blue-600">La solució: Trencar una desena.</p>
-                                    <p>Agafem una desena, la ratllim i la passem a unitats (+10). Ara ja en tindrem prou!</p>
+                                    <p>Agafem una desena, la trenquem i la passem a unitats (+10). Ara ja en tindrem prou!</p>
                                 </>
                             }
                             levelSelector={
                                 <div className="grid grid-cols-2 gap-2">
-                                    <Button onClick={() => loadLevel('direct')} variant={mode === 'direct' ? 'primary' : 'outline'}>Sense trencar</Button>
-                                    <Button onClick={() => loadLevel('break')} variant={mode === 'break' ? 'primary' : 'outline'}>Trencant desena</Button>
+                                    <Button onClick={() => loadLevel('direct')} variant={mode === 'direct' ? 'primary' : 'outline'}>Sense portar</Button>
+                                    <Button onClick={() => loadLevel('break')} variant={mode === 'break' ? 'primary' : 'outline'}>Portant-ne</Button>
                                 </div>
                             }
                         />
                         <div className="bg-white rounded-2xl shadow-xl border border-blue-50 w-full lg:w-2/3 p-4 flex flex-col items-center justify-center overflow-y-auto">
                              <div className="grid grid-cols-2 gap-x-6 text-5xl font-mono text-gray-800 relative bg-blue-50 p-8 rounded-3xl border border-blue-100 shadow-inner scale-90 md:scale-100">
+                                {/* Inputs Descomposició */}
                                 <div className="h-16 flex items-end justify-center">
                                     {data.broken && phase >= 1 && <input type="number" className="w-20 bg-white border-2 border-blue-300 rounded text-center text-blue-600 p-1 text-3xl" value={inputs.tens} onChange={e=>setInputs({...inputs, tens:e.target.value})} autoFocus/>}
                                 </div>
                                 <div className="h-16 flex items-end justify-center">
                                     {data.broken && phase >= 1 && <input type="number" className="w-20 bg-white border-2 border-blue-300 rounded text-center text-blue-600 p-1 text-3xl" value={inputs.units} onChange={e=>setInputs({...inputs, units:e.target.value})} />}
                                 </div>
+
+                                {/* Minuend */}
                                 <div className={`relative flex justify-center transition-colors ${data.broken && phase >= 1 ? 'text-gray-300' : ''}`}>
                                     {m_tens}
                                     {data.broken && phase === 0 && (
-                                        <button onClick={() => { setPhase(1); setMsg("Molt bé, has trencat la desena. Ara escriu els nous valors a dalt."); }} 
+                                        <button onClick={() => { setPhase(1); setMsg("Molt bé, has trencat la desena. Ara escriu les noves xifres a dalt."); }} 
                                             className="absolute -top-10 text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full animate-bounce border border-red-200 shadow-sm font-sans font-bold whitespace-nowrap">
                                             Trencar
                                         </button>
@@ -367,9 +370,18 @@
                                     {m_units}
                                     {data.broken && phase >= 1 && <div className="absolute w-full h-1 bg-red-400 -rotate-45 top-1/2"></div>}
                                 </div>
-                                <div className="col-span-2 border-b-4 border-gray-800 my-2 flex justify-between items-center relative"><span className="absolute left-[-30px] text-4xl font-sans text-blue-300">-</span></div>
-                                <div className="flex justify-center">{s_tens}</div>
-                                <div className="flex justify-center">{s_units}</div>
+
+                                {/* Substrahend + Signe */}
+                                <div className="flex justify-center items-center relative mt-2">
+                                    <span className="absolute left-[-30px] text-4xl font-sans text-blue-300">-</span>
+                                    {s_tens}
+                                </div>
+                                <div className="flex justify-center items-center mt-2">{s_units}</div>
+
+                                {/* Línia separadora A SOTA dels dos números */}
+                                <div className="col-span-2 border-b-4 border-gray-800 my-2"></div>
+
+                                {/* Resultats */}
                                 <div className="flex justify-center mt-2">
                                     {((!data.broken && phase >= 1) || (data.broken && phase >= 3)) && <input type="number" className="w-20 bg-white border-2 border-green-400 rounded text-center font-bold text-green-700 p-1" value={inputs.rt} onChange={e=>setInputs({...inputs, rt:e.target.value})} />}
                                 </div>
@@ -397,9 +409,10 @@
 
             const generateData = (m) => {
                 if (m === 'simple') {
+                    // MODIFICAT: F1 (2-9), F2 (20-59)
                     const f1 = randomInt(2, 9);
-                    const f2 = randomInt(20, 59); // Max 59
-                    // Breakdown logic
+                    const f2 = randomInt(20, 59);
+                    // Breakdown logic: if 42 -> 40 and 2.
                     const tens = Math.floor(f2/10)*10;
                     const units = f2%10;
                     return { f1, f2, tens, units, complex: false };
@@ -421,8 +434,8 @@
 
             const check = () => {
                 if (!data.complex) {
-                    const p1 = data.tens * data.f1; 
-                    const p2 = data.units * data.f1; 
+                    const p1 = data.tens * data.f1; // Ex: 30 * 4
+                    const p2 = data.units * data.f1; // Ex: 2 * 4
                     if (phase === 0) {
                         if (parseInt(vals.a) === p1 && parseInt(vals.b) === p2) { setPhase(1); setMsg("Bé! Ara suma les dues àrees."); }
                         else setMsg(`Revisa: ${data.tens} x ${data.f1} i ${data.units} x ${data.f1}`);
@@ -533,7 +546,7 @@
 
             const items = [
                 { name: "caramels", target: "amics" },
-                { name: "pilotes", target: "cistelles" },
+                { name: "pilotes", target: "cistells" },
                 { name: "cromos", target: "àlbums" },
                 { name: "samarretes", target: "equips" },
                 { name: "pomes", target: "caixes" },
@@ -563,7 +576,7 @@
                 setHistory([...history, { mul: val, sub, newR }]);
                 setRem(newR);
                 setInput("");
-                setMsg(newR === 0 ? "Ben fet! Ja no queda res!" : "Continua repartint el que queda.");
+                setMsg(newR === 0 ? "Exacte! Ja no queda res." : "Continua repartint el que queda.");
             };
 
             const totalQ = history.reduce((a, b) => a + b.mul, 0);
@@ -573,7 +586,7 @@
                     <TopBar title="Taller de Divisions" onHome={onBack} />
                     <div className="flex flex-col lg:flex-row flex-1 p-4 gap-6">
                          <ExplanationPanel 
-                            title="Divisió en Caixa"
+                            title="Divisió en caixa"
                             content={
                                 <div>
                                     <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 my-4 text-purple-900 shadow-sm">
@@ -672,7 +685,7 @@
                         <h1 className="text-4xl md:text-6xl font-extrabold text-blue-900 mb-4 tracking-tight leading-tight">
                             EL MÈTODE INNOVAMAT <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">PAS A PAS</span>
                         </h1>
-                        <p className="text-xl text-gray-500 font-medium">Guia interactiva per a infants, famílies i docents.</p>
+                        <p className="text-xl text-gray-500 font-medium">Guia interactiva per a infants, famílies  docents</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl px-4">
